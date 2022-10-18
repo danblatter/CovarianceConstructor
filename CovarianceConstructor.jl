@@ -1,10 +1,10 @@
 # The beginning of a new code project...
 
-using DelimitedFiles
+using DelimitedFiles, LinearAlgebra
 include("buildCovariance.jl")
 
 C = readdlm("resistivityMeshCentroids_Gemini.txt")
 
 kernel = "GaspariCohn"
 
-B = buildCovariance(C,kernel)
+B,I,J,V = buildCovariance(C,kernel)
