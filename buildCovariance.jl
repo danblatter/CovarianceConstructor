@@ -8,8 +8,8 @@ function buildCovariance(C,kernel,l)
 
 n = size(C,1)
 
-I = zeros(Int64,n*n,1)
-J = zeros(Int64,n*n,1)
+M = zeros(Int64,n*n,1)
+N = zeros(Int64,n*n,1)
 V = zeros(n*n,1)
 
 if cmp(kernel,"GaspariCohn") == 0
@@ -23,8 +23,8 @@ if cmp(kernel,"GaspariCohn") == 0
             r = norm(C[i,:] - C[j,:])
             c = GaspariCohn(r,l)
             if c > 0
-                I[k] = Int(i)
-                J[k] = Int(j)
+                M[k] = Int(i)
+                N[k] = Int(j)
                 V[k] = c
                 k = k + 1
             end
@@ -34,16 +34,16 @@ else
     println("we only support Gaspari-Cohn at the moment. Sorry!")
 end
 
-I = I[1:k-1]
-J = J[1:k-1]
+M = M[1:k-1]
+N = N[1:k-1]
 V = V[1:k-1]
 
-B = sparse(I,J,V,n,n)
+B = sparse(M,N,V,n,n)
 
 sparseratio = size(I,1)/(n^2)
 println("This sparse covariance takes $(100*sparseratio)% of the memory of the dense matrix")
 
-return B, I, J, V
+return B#, M, N, V
 
 end
 
