@@ -4,10 +4,7 @@
 using LinearAlgebra
 include("kernels.jl")
 
-function buildCovariance(C,kernel)
-
-#= B = zeros(size(C,1),size(C,1))    
-println("the size of B is $(size(B,1)) x $(size(B,2))") =#
+function buildCovariance(C,kernel,l)
 
 n = size(C,1)
 
@@ -17,19 +14,14 @@ V = zeros(n*n,1)
 
 if cmp(kernel,"GaspariCohn") == 0
     println("lets compute using the Gaspari-Cohn kernel!")
-#=     x = 0:0.01:3
-    y = zeros(size(x))
-    for j=1:length(x)
-        y[j] = GaspariCohn(x[j],1)
-    end
-    writedlm("GaspariCohnTest.txt",y) =#
     k = 1
     for i=1:n
-        println("$i of $n")
+        if mod(i,100) == 0
+            println("$i of $n")
+        end
         for j=1:n
             r = norm(C[i,:] - C[j,:])
-            c = GaspariCohn(r,1e3)
-            # println("r = $r; c = $c")
+            c = GaspariCohn(r,l)
             if c > 0
                 I[k] = Int(i)
                 J[k] = Int(j)
@@ -47,6 +39,9 @@ J = J[1:k-1]
 V = V[1:k-1]
 
 B = sparse(I,J,V,n,n)
+
+sparseratio = size(I,1)/(n^2)
+println("This sparse covariance takes $(100*sparseratio)% of the memory of the dense matrix")
 
 return B, I, J, V
 
