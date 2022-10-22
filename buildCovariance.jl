@@ -1,7 +1,7 @@
 # This is the main function that builds the covariance from a set of model mesh element centroids
 # and a correlation kernel
 
-using LinearAlgebra
+using LinearAlgebra, SparseArrays
 include("kernels.jl")
 
 function buildCovariance(C,kernel,l)
@@ -40,7 +40,7 @@ V = V[1:k-1]
 
 B = sparse(M,N,V,n,n)
 
-sparseratio = size(I,1)/(n^2)
+sparseratio = size(M,1)/(n^2)
 println("This sparse covariance takes $(100*sparseratio)% of the memory of the dense matrix")
 
 return B#, M, N, V
