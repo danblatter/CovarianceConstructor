@@ -3,14 +3,17 @@
 
 using LinearAlgebra, SparseArrays
 include("kernels.jl")
+include("makeTearArray.jl")
 
-function buildCovariance(C,kernel,l)
+function buildCovariance(C,kernel,l,tear)
 
 n = size(C,1)
 
 M = zeros(Int64,n*n,1)
 N = zeros(Int64,n*n,1)
 V = zeros(n*n,1)
+
+T = makeTearArray(C,tear)
 
 if cmp(kernel,"GaspariCohn") == 0
     println("lets compute using the Gaspari-Cohn kernel!")
@@ -43,7 +46,7 @@ B = sparse(M,N,V,n,n)
 sparseratio = size(M,1)/(n^2)
 println("This sparse covariance takes $(100*sparseratio)% of the memory of the dense matrix")
 
-return B#, M, N, V
+return B, T#, M, N, V
 
 end
 
