@@ -7,44 +7,31 @@ include("makeTearArray.jl")
 
 function buildCovariance(C,kernel,l,tear)
 
-n = size(C,1)
-
-M = zeros(Int64,n*n,1)
-N = zeros(Int64,n*n,1)
-V = zeros(n*n,1)
-
 T = makeTearArray(C,tear)
 
 if cmp(kernel,"GaspariCohn") == 0
-    println("lets compute using the Gaspari-Cohn kernel!")
-    k = 1
-    for i=1:n
-        if mod(i,100) == 0
-            println("$i of $n")
-        end
-        for j=1:n
-            r = norm(C[i,:] - C[j,:])
-            c = GaspariCohn(r,l)
-            if c > 0
-                M[k] = Int(i)
-                N[k] = Int(j)
-                V[k] = c
-                k = k + 1
-            end
-        end
-    end
+    B = buildGaspariCohn(C,l)
+elseif cmp(kernel,"MattiSpecial_GC") == 0
+    B = buildMattiSpecial(C,l)
+elseif cmp(kernel,"squaredExponential") == 0
+    B = buildSquaredExponential(C,l)
+elseif cmp(kernel,"Exponential") == 0
+    B = buildExponential(C,l)
 else
-    println("we only support Gaspari-Cohn at the moment. Sorry!")
+    println("we only support Gaspari-Cohn and MattiSpecial_GC at the moment. Sorry!")
 end
 
-M = M[1:k-1]
-N = N[1:k-1]
-V = V[1:k-1]
-
-B = sparse(M,N,V,n,n)
-
-sparseratio = size(M,1)/(n^2)
-println("This sparse covariance takes $(100*sparseratio)% of the memory of the dense matrix")
+# check to see if the covariance matrix is symmetric and positive definite
+if issymmetric(B)
+    println("Test passed: Covariance matrix is symmetric")
+else
+    println("Warning! Covariance matrix is not symmetric!!!")
+end
+if isposdef(B)
+    println("Test passed: Covariance matrix is positive definite")
+else
+    println("Warning! Covariance matrix is not positive definite!!!")
+end
 
 return B, T#, M, N, V
 

@@ -6,14 +6,23 @@ include("getCovSquareRoot.jl")
 
 C = readdlm("resistivityMeshCentroids_Gemini.txt")  # model mesh element (model parameter) locations
 n = size(C,1) 
-tear = readdlm("tear.txt")
-# tear = Inf                 # uncomment this line if you don't wish to add a correlation tear
+# tear = readdlm("tear.txt")
+tear = Inf                 # uncomment this line if you don't wish to add a correlation tear
 
-kernel = "GaspariCohn"  # correlation kernel
+# kernel = "GaspariCohn"  # correlation kernel
+# kernel = "Exponential"
+# kernel = "squaredExponential"
+kernel = "MattiSpecial_GC"  # correlation kernel
 
-l = 1000     # correlation length (m)
+l = 10000     # correlation length (m)
 
 B, T = buildCovariance(C,kernel,l,tear)
+
+figure(1)
+scatter(C[:,1],C[:,2],c=B[4000,:],s=2)
+plt.xlim([-2e4, 2e4])
+plt.ylim([0, 2e4])
+plt.gca().invert_yaxis()
 
 save("covB.jld","B",B)
 
@@ -26,7 +35,7 @@ L = getCovSquareRoot(B,"false")
 
 # plot this sample
 
-figure(1)
+figure(2)
 scatter(C[:,1],C[:,2],c=θ,s=2)
 plt.xlim([-2e4, 2e4])
 plt.ylim([0, 2e4])
