@@ -11,10 +11,10 @@ tear = Inf                 # uncomment this line if you don't wish to add a corr
 
 # kernel = "GaspariCohn"  # correlation kernel
 # kernel = "Exponential"
-# kernel = "squaredExponential"
-kernel = "MattiSpecial_GC"  # correlation kernel
+kernel = "squaredExponential"
+# kernel = "MattiSpecial_GC"  # correlation kernel
 
-l = 10000     # correlation length (m)
+l = 2000     # correlation length (m)
 
 B, T = buildCovariance(C,kernel,l,tear)
 

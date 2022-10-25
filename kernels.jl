@@ -15,20 +15,20 @@ end
 function MattiSpecial(r,li,lj)
     # non-stationary covariance kernel; each model location has its own correlation length and variance
     prefactor = abs(li)^(0.25)*abs(lj)^(0.25)*abs((li+lj)/2)^(-0.5)
-    expfactor = (r/((li+lj)/2))^2
+    expfactor = abs(r/((li+lj)/2))^(1.99)
     b = prefactor * exp(-expfactor)
     return b
 end
 
 function squaredExponential(r,l)
     # squared exponential correlation kernel
-    b = exp(-(r/l)^2)
+    b = exp(-abs(r/l)^(1.99))
     return b
 end
 
 function exponential(r,l)
     # squared exponential correlation kernel
-    b = exp(-(r/l))
+    b = exp(-abs((r/l)^(1.0)))
     return b
 end
 
@@ -131,9 +131,7 @@ function buildExponential(C,l)
         if mod(i,100) == 0          # record our progress (this can take a while...)
             println("$i of $n")
         end
-        li = l                          # correlation length for this model parameter location
         for j=1:n
-            lj = l                      # correlation length for this model parameter location
             r = norm(C[i,:] - C[j,:])   # distance between these two model parameters
             c = exponential(r,l)
             if c > 0                    # only save non-zeros, since B is sparse
@@ -142,7 +140,7 @@ function buildExponential(C,l)
                 N[k] = Int(j)
                 V[k] = c
             else
-                println("model paramters $i and $j have exactly 0.0 covariance")
+                # println("model paramters $i and $j have exactly 0.0 covariance")
             end
         end
     end
@@ -172,9 +170,7 @@ function buildSquaredExponential(C,l)
         if mod(i,100) == 0          # record our progress (this can take a while...)
             println("$i of $n")
         end
-        li = l                          # correlation length for this model parameter location
         for j=1:n
-            lj = l                      # correlation length for this model parameter location
             r = norm(C[i,:] - C[j,:])   # distance between these two model parameters
             c = squaredExponential(r,l)
             if c > 0                    # only save non-zeros, since B is sparse
@@ -183,7 +179,7 @@ function buildSquaredExponential(C,l)
                 N[k] = Int(j)
                 V[k] = c
             else
-                println("model paramters $i and $j have exactly 0.0 covariance")
+                # println("model paramters $i and $j have exactly 0.0 covariance")
             end
         end
     end
