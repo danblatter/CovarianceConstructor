@@ -94,9 +94,7 @@ function buildMattiSpecial(C,l::Number)
             c = MattiSpecial(r,li,lj)
             cGC = GaspariCohn(r,l)
             c = c * cGC
-#=             if abs(T[i] - T[j]) == 2    # these two model parameters are on opposite sides of a tear
-                c = 0.0*c               # skip to next model parameter (correlation is zero by default)
-            end =#
+
             if c > 0                # only save non-zeros, since B is sparse
                 k = k + 1
                 M[k] = Int(i)
@@ -136,13 +134,14 @@ function buildMattiSpecial(C,l::Function)
         x = C[i,1]; z = C[i,2]; li = l(x,z)          # correlation length for this model parameter location
         for j=1:n
             x = C[j,1]; z = C[j,2]; lj = l(x,z)      # correlation length for this model parameter location
+#=             if abs(T[i] - T[j]) == 2    # these two model parameters are on opposite sides of a tear
+                li = 50; lj = 50
+            end =#
             r = norm(C[i,:] - C[j,:])   # distance between these two model parameters
             c = MattiSpecial(r,li,lj)
             lgc = (li+lj)/2; cGC = GaspariCohn(r,lgc)
             c = c * cGC
-#=             if abs(T[i] - T[j]) == 2    # these two model parameters are on opposite sides of a tear
-                c = 0.0*c               # skip to next model parameter (correlation is zero by default)
-            end =#
+            
             if c > 0                # only save non-zeros, since B is sparse
                 k = k + 1
                 M[k] = Int(i)
