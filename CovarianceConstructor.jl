@@ -11,10 +11,14 @@ tear = Inf                 # uncomment this line if you don't wish to add a corr
 
 # kernel = "GaspariCohn"  # correlation kernel
 # kernel = "Exponential"
-kernel = "squaredExponential"
-# kernel = "MattiSpecial_GC"  # correlation kernel
+# kernel = "squaredExponential"
+#   Note on the Matti special: it can be called with three types of arguments for "l"
+#   1. a scalar; l is the same everywhere
+#   2. a function; must be a function of x and z
+kernel = "MattiSpecial_GC"  # correlation kernel
 
-l = 2000     # correlation length (m)
+# l = 2500     # scalar correlation length (m)
+l(x::Float64,z::Float64) = 250 + 0.5*z      # correlation length as a function of x and z 
 
 B, T = buildCovariance(C,kernel,l,tear)
 
@@ -26,13 +30,16 @@ plt.gca().invert_yaxis()
 
 save("covB.jld","B",B)
 
+println("computing matrix square root...")
 L = getCovSquareRoot(B,"false")
 
+println("drawing random sample...")
 # draw a random sample from N(0,B)
 ξ = randn(n)
 θ = L*ξ
 # θ_noperm = L_noperm*ξ
 
+println("plotting...")
 # plot this sample
 
 figure(2)
@@ -60,6 +67,6 @@ plt.ylim([0, 2e4])
 plt.gca().invert_yaxis()
 colorbar()
 
-
+println("finished!")
 
 
