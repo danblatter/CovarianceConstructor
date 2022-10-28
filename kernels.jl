@@ -118,7 +118,7 @@ function buildMattiSpecial(C,l::Number)
     return B
 end
 
-function buildMattiSpecial(C,l::Function)
+function buildMattiSpecial(C,l::Function,T)
     println("lets compute using the Matti Special-GC kernel!")
 
     n = size(C,1)
@@ -131,16 +131,20 @@ function buildMattiSpecial(C,l::Function)
         if mod(i,100) == 0          # record our progress (this can take a while...)
             println("$i of $n")
         end
-        x = C[i,1]; z = C[i,2]; li = l(x,z)          # correlation length for this model parameter location
         for j=1:n
+            x = C[i,1]; z = C[i,2]; li = l(x,z)          # correlation length for this model parameter location
             x = C[j,1]; z = C[j,2]; lj = l(x,z)      # correlation length for this model parameter location
-#=             if abs(T[i] - T[j]) == 2    # these two model parameters are on opposite sides of a tear
-                li = 50; lj = 50
-            end =#
+            if abs(T[i] - T[j]) == 2    # these two model parameters are on opposite sides of a tear
+                li = 50; lj = 50;
+            end
             r = norm(C[i,:] - C[j,:])   # distance between these two model parameters
             c = MattiSpecial(r,li,lj)
             lgc = (li+lj)/2; cGC = GaspariCohn(r,lgc)
             c = c * cGC
+
+            if i == 3767 && j == 3635
+                println("i=$i; j=$j; li=$(li); lj=$(lj); cGC=$(cGC); lgc=$(lgc); tear=$(abs(T[i] - T[j]) == 2)")
+            end
             
             if c > 0                # only save non-zeros, since B is sparse
                 k = k + 1

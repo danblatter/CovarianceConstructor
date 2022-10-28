@@ -3,7 +3,7 @@
 
 using LinearAlgebra, SparseArrays
 include("kernels.jl")
-include("makeTearArray.jl")
+include("tearFunctions.jl")
 
 function buildCovariance(C,kernel,l,tear)
 
@@ -12,7 +12,7 @@ T = makeTearArray(C,tear)
 if cmp(kernel,"GaspariCohn") == 0
     B = buildGaspariCohn(C,l)
 elseif cmp(kernel,"MattiSpecial_GC") == 0
-    B = buildMattiSpecial(C,l)
+    B = buildMattiSpecial(C,l,T)
 elseif cmp(kernel,"squaredExponential") == 0
     B = buildSquaredExponential(C,l)
 elseif cmp(kernel,"Exponential") == 0
