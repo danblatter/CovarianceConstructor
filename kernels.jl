@@ -74,7 +74,7 @@ function buildGaspariCohn(C,l)
     return B
 end
 
-function buildMattiSpecial(C,l::Number)
+function buildMattiSpecial(C,l::Number,T)
     println("lets compute using the Matti Special-GC kernel!")
 
     n = size(C,1)
@@ -90,6 +90,9 @@ function buildMattiSpecial(C,l::Number)
         li = l          # correlation length for this model parameter location
         for j=1:n
             lj = l      # correlation length for this model parameter location
+            if abs(T[i] - T[j]) == 2                 # these two model parameters are on opposite sides of a tear
+                li = 100; lj = 100
+            end
             r = norm(C[i,:] - C[j,:])   # distance between these two model parameters
             c = MattiSpecial(r,li,lj)
             cGC = GaspariCohn(r,l)
@@ -118,7 +121,7 @@ function buildMattiSpecial(C,l::Number)
     return B
 end
 
-function buildMattiSpecial(C,l::Function)
+function buildMattiSpecial(C,l::Function,T)
     println("lets compute using the Matti Special-GC kernel!")
 
     n = size(C,1)
@@ -134,9 +137,9 @@ function buildMattiSpecial(C,l::Function)
         x = C[i,1]; z = C[i,2]; li = l(x,z)          # correlation length for this model parameter location
         for j=1:n
             x = C[j,1]; z = C[j,2]; lj = l(x,z)      # correlation length for this model parameter location
-#=             if abs(T[i] - T[j]) == 2    # these two model parameters are on opposite sides of a tear
-                li = 50; lj = 50
-            end =#
+            if abs(T[i] - T[j]) == 2                 # these two model parameters are on opposite sides of a tear
+                lj = 100; li = 100
+            end
             r = norm(C[i,:] - C[j,:])   # distance between these two model parameters
             c = MattiSpecial(r,li,lj)
             lgc = (li+lj)/2; cGC = GaspariCohn(r,lgc)
