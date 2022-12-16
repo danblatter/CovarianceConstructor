@@ -3,7 +3,7 @@
 
 using LinearAlgebra, SparseArrays
 include("kernels.jl")
-include("makeTearArray.jl")
+include("tearFunctions.jl")
 
 function buildCovariance(C,kernel,l,tear)
 
