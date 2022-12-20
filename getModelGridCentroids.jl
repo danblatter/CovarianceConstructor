@@ -11,6 +11,7 @@ using DelimitedFiles
 filenameroot = "KI_60_fullyMeshed.0" # MARE2DEM model files to load
 bquiet       = true       # set to true to turn off all MARE2DEM print statements
 outfilename = "KI_60centroids_fullyMeshed.txt"
+outfilename2 = "KI_60rho_fullyMeshed.txt"
 
 # MPI stuff
 # Initialize MPI and get communicator, rank and number of MPI processes in communicator:
@@ -28,6 +29,7 @@ if mpirank == 0
         println("$fname ")
     end
     writedlm(outfilename,M2d.centroids)
+    writedlm(outfilename2,M2d.log10rhofree)
 end
 
 MPI.Barrier(comm)

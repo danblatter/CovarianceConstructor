@@ -55,7 +55,7 @@ function assignGeologicUnits(H,C)
             elseif C[ic,1] == h[a[2],1]
                 ind1 = a[2]; ind2 = a[2];
             end
-            # x-values of the two nearest horizon nodes
+            # setup the linear interpolation
             x1 = h[ind1,1]; x2 = h[ind2,1]; z1 = h[ind1,2]; z2 = h[ind2,2]; x = C[ic,1]; z = C[ic,2]
             zinterp = linearInterpolate(z1,z2,x1,x2,x)
             # determine if this model parameter is in this geologic unit
