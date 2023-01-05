@@ -3,10 +3,10 @@
 #
 # Input: 
 # Well log array that has 4 columns
-#   1. x (m)
+#   1. x (m) (the well could be deviated)
 #   2. z (m)
 #   3. mean log10 resistivity (ohm-m) (mean of log-resistivity)
-#   4. log-standard deviation (ohm-m) (standard deviation of log-resistivity)
+#   4. log10 standard deviation (ohm-m) (standard deviation of log-resistivity)
 #
 # Horizon array that has an even number of columns (same as used in assignGeologicUnits)
 #
@@ -39,8 +39,10 @@ function assignGeologicUnits_wellLog(wellLog,H,zmax,z0)
                                         # each array in this vector will be a well log unit
 
     global zinterp = 0  # placeholder value, just declaring it here so it persists beyond while loop
-    ih = nh - 1     # horizons are listed deepest-to-shallowest, we will iterate shallowest-to-deepest
-    while ih > 0   
+    ## ih = nh - 1     # horizons are listed deepest-to-shallowest, we will iterate shallowest-to-deepest
+    ih = 1     # horizons are listed shallowest-to-deepest
+    ## while ih > 0
+    while ih < nh   
         println("ih = $ih")
         # pull out this horizon only
         h = H[:,ih:ih+1]
@@ -57,7 +59,7 @@ function assignGeologicUnits_wellLog(wellLog,H,zmax,z0)
         end
         # find depth to this horizon at location of well (assume it's not deviated for now)
         x1 = h[ind1,1]; x2 = h[ind2,1]; z1 = h[ind1,2]; z2 = h[ind2,2]; x = x_well;
-        if ih == nh - 1
+        if ih == 1
             # shallowest horizon; zprev is the surface
             zprev = z0
             global zinterp = linearInterpolate(z1,z2,x1,x2,x)
@@ -75,7 +77,7 @@ function assignGeologicUnits_wellLog(wellLog,H,zmax,z0)
         # add this well log section to our vector of arrays
         push!(wellLogUnits,thisUnit)
 
-        ih = ih - 2
+        ih = ih + 2
 
     end
 

@@ -11,11 +11,11 @@
 
 include("linearInterpolate.jl")
 
-function assignGeologicUnits(H,C)
+function assignGeologicUnits_modelParameters(H,C)
 
     # H is an array of horizons. Each horizon consists of two columns of this matrix; column i = x, 
-    # column j = z, where i is odd and j is even. The deepest horizon is listed first, followed by
-    # the next shallowest, until the shallowest horizon (listed last)
+    # column j = z, where i is odd and j is even. The shallowest horizon is listed first, followed by
+    # the next deepest, until the deepest horizon (listed last)
     # C is the array of (x,z) coordinates of model parameter centroids. First column is x-coordinates,
     # second column is z-coordinates
     # GU is the output: a vector of the same length as the model with an integer at each value
@@ -37,14 +37,13 @@ function assignGeologicUnits(H,C)
         if mod(ic,100) == 0
             println("computing $ic of $(size(C,1))")
         end
-        foundGeologicUnit = false
-        ih = nh - 1
+        foundGeologicUnit = false 
+        ih = 1
         while !foundGeologicUnit
         # for ih=1:2:nh-1
             # pull out this horizon only
             h = H[:,ih:ih+1]
             # append the min and max values of x to the horizon (extend horizons to the model edges) 
-            firstnode = [minimum(C[:,1])-1 h[1,2]]; lastnode = [maximum(C[:,1])+1 h[end,2]];
             h = [minimum(C[:,1]) h[1,2]; h; maximum(C[:,1]) h[end,2]]
             # find the nearest two horizon nodes
             a = findmin(abs.(h[:,1] .- C[ic,1]))
@@ -57,21 +56,22 @@ function assignGeologicUnits(H,C)
             end
             # setup the linear interpolation
             x1 = h[ind1,1]; x2 = h[ind2,1]; z1 = h[ind1,2]; z2 = h[ind2,2]; x = C[ic,1]; z = C[ic,2]
-            zinterp = linearInterpolate(z1,z2,x1,x2,x)
+            # this is the horizon depth at this model parameter's x-location
+            zinterp = linearInterpolate(z1,z2,x1,x2,x) 
             # determine if this model parameter is in this geologic unit
             if z <= zinterp
-                GU[ic] = Int64((ih+1)/2 + 1)
+                GU[ic] = Int64((ih+1)/2)
                 foundGeologicUnit = true
                 # break
-            elseif z > zinterp && ih == 1
-                # we're above the last horizon
-                GU[ic] = Int64(1)
+            elseif z > zinterp && (ih+1) == nh
+                # we're below the last horizon
+                GU[ic] = Int64(floor(nh/2) + 1)     # final unit is labeled as: 1 + number of horizons
                 foundGeologicUnit = true
-            else
+            else 
                 # move to the next horizon
-                ih = ih - 2
+                ih = ih + 2
                 # debugging
-                if ih < 1
+                if ih > nh - 1
                     println("z=$z; zinterp=$zinterp; ic=$ic")
                 end
             end
