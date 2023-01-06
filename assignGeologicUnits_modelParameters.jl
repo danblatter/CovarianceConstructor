@@ -42,7 +42,8 @@ function assignGeologicUnits_modelParameters(H,C)
         while !foundGeologicUnit
         # for ih=1:2:nh-1
             # pull out this horizon only
-            h = H[:,ih:ih+1]
+            inds = findall(x -> typeof(x) == Float64, H[:,ih])
+            h = H[inds,ih:ih+1]
             # append the min and max values of x to the horizon (extend horizons to the model edges) 
             h = [minimum(C[:,1]) h[1,2]; h; maximum(C[:,1]) h[end,2]]
             # find the nearest two horizon nodes

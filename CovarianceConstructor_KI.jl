@@ -3,7 +3,7 @@
 using DelimitedFiles, JLD, SuiteSparse, PyPlot
 include("buildCovariance.jl")
 include("getCovSquareRoot.jl")
-include("assignGeologicUnits.jl")
+include("assignGeologicUnits_modelParameters.jl")
 include("assignGeologicUnits_wellLog.jl")
 
 println("reading in the model centroids")
@@ -26,11 +26,11 @@ wellLog = readdlm("KIrhoWellLog.txt")
 
 # load in the geologic horizons
 println("loading geologic horizons")
-H = readdlm("KI60horizons_2.txt")
+H = readdlm("KI60horizons_3.txt")
 
 # get the geologic unit assignment vector
 println("assigning each model parameter to a geologic unit")
-GU = assignGeologicUnits(H,C)
+GU = assignGeologicUnits_modelParameters(H,C)
 
 # get the well log units, divided up according to geologic unit
 println("breaking up the well log based on geologic unit")

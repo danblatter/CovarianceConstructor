@@ -45,7 +45,8 @@ function assignGeologicUnits_wellLog(wellLog,H,zmax,z0)
     while ih < nh   
         println("ih = $ih")
         # pull out this horizon only
-        h = H[:,ih:ih+1]
+        inds = findall(x -> typeof(x) == Float64, H[:,ih])
+        h = H[inds,ih:ih+1]
         # x-location of the well (assume it's not deviated)
         x_well = mean(wellLog[:,1])
         # find the nearest two horizon nodes to the well 
