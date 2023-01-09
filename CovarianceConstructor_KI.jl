@@ -5,6 +5,7 @@ include("buildCovariance.jl")
 include("getCovSquareRoot.jl")
 include("assignGeologicUnits_modelParameters.jl")
 include("assignGeologicUnits_wellLog.jl")
+include("assignMeanStdCorrlen.jl")
 
 println("reading in the model centroids")
 C = readdlm("KI_60centroids_fullyMeshed.txt")  # model mesh element (model parameter) locations
@@ -26,7 +27,7 @@ wellLog = readdlm("KIrhoWellLog.txt")
 
 # load in the geologic horizons
 println("loading geologic horizons")
-H = readdlm("KI60horizons_3.txt")
+H = readdlm("KI60horizons_3_wSurface.txt")
 
 # get the geologic unit assignment vector
 println("assigning each model parameter to a geologic unit")
@@ -34,4 +35,11 @@ GU = assignGeologicUnits_modelParameters(H,C)
 
 # get the well log units, divided up according to geologic unit
 println("breaking up the well log based on geologic unit")
-wellLogUnits = assignGeologicUnits_wellLog(wellLog,H,2300,0)
+zmax = maximum(C[:,2])     # make sure the 'well log' extends to cover the deepest model parameter  
+                           # portions of the prior below the depth of actual prior information from
+                           # a well log are assumed to have the same value as the last well log value
+wellLogUnits = assignGeologicUnits_wellLog(wellLog,H,zmax)
+
+meanRho, stdRho, corrLen = assignMeanStdCorrlen(wellLogUnits,GU,C,H)
+
+

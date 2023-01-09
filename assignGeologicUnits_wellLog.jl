@@ -25,7 +25,7 @@
 using StatsBase, DelimitedFiles
 include("linearInterpolate.jl")
 
-function assignGeologicUnits_wellLog(wellLog,H,zmax,z0)
+function assignGeologicUnits_wellLog(wellLog,H,zmax)
 
    # make sure there are an even number of columns in H, and determine how many horizons
    if mod(size(H,2),2) != 0
@@ -40,7 +40,7 @@ function assignGeologicUnits_wellLog(wellLog,H,zmax,z0)
 
     global zinterp = 0  # placeholder value, just declaring it here so it persists beyond while loop
     ## ih = nh - 1     # horizons are listed deepest-to-shallowest, we will iterate shallowest-to-deepest
-    ih = 1     # horizons are listed shallowest-to-deepest
+    ih = 3     # horizons are listed shallowest-to-deepest, first horizon is surface elevation
     ## while ih > 0
     while ih < nh   
         println("ih = $ih")
@@ -60,9 +60,13 @@ function assignGeologicUnits_wellLog(wellLog,H,zmax,z0)
         end
         # find depth to this horizon at location of well (assume it's not deviated for now)
         x1 = h[ind1,1]; x2 = h[ind2,1]; z1 = h[ind1,2]; z2 = h[ind2,2]; x = x_well;
-        if ih == 1
+        if ih == 3
             # shallowest horizon; zprev is the surface
-            zprev = z0
+            inds_ = findall(x -> typeof(x) == Float64, H[:,1])
+            h_ = H[inds_,1:2]
+            # find surface elevation at location of well (assume it's not deviated for now)
+            z1_ = h_[ind1,2]; z2_ = h_[ind2,2];
+            zprev = linearInterpolate(z1_,z2_,x1,x2,x)
             global zinterp = linearInterpolate(z1,z2,x1,x2,x)
         else
             zprev =  zinterp    # depth of previous horizon

@@ -38,9 +38,8 @@ function assignGeologicUnits_modelParameters(H,C)
             println("computing $ic of $(size(C,1))")
         end
         foundGeologicUnit = false 
-        ih = 1
+        ih = 3      # first horizon is the surface elevation
         while !foundGeologicUnit
-        # for ih=1:2:nh-1
             # pull out this horizon only
             inds = findall(x -> typeof(x) == Float64, H[:,ih])
             h = H[inds,ih:ih+1]
@@ -61,12 +60,11 @@ function assignGeologicUnits_modelParameters(H,C)
             zinterp = linearInterpolate(z1,z2,x1,x2,x) 
             # determine if this model parameter is in this geologic unit
             if z <= zinterp
-                GU[ic] = Int64((ih+1)/2)
+                GU[ic] = Int64((ih+1)/2 - 1)
                 foundGeologicUnit = true
-                # break
             elseif z > zinterp && (ih+1) == nh
                 # we're below the last horizon
-                GU[ic] = Int64(floor(nh/2) + 1)     # final unit is labeled as: 1 + number of horizons
+                GU[ic] = Int64(floor(nh/2))     # final unit is labeled as: 1 + number of horizons
                 foundGeologicUnit = true
             else 
                 # move to the next horizon
