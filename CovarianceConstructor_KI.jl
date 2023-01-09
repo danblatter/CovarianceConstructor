@@ -9,6 +9,7 @@ include("assignMeanStdCorrlen.jl")
 
 println("reading in the model centroids")
 C = readdlm("KI_60centroids_fullyMeshed.txt")  # model mesh element (model parameter) locations
+trueRho = readdlm("KI_60rho_fullyMeshed.txt")  # model mesh element (model parameter) locations
 n = size(C,1) 
 # tear = readdlm("tear.txt")
 tear = Inf                 # uncomment this line if you don't wish to add a correlation tear

@@ -1,4 +1,8 @@
 
+# module assignPriorInformation
+
+include("linearInterpolate.jl")
+
 # the goal of this function is to produce a mean and standard deviation model as well as a correlation length
 # model on the basis of a well log. The basic idea is to take the well log intervals (broken up according to
 # the geologic units/seismic horizons) and propagate them away from the well log into their respective geologic
@@ -23,15 +27,22 @@ function assignMeanStdCorrlen(WL,GU,C,H)
 
     nh = size(H,2)
 
-    for ih=3:2:nh
+    for ih=3:2:nh+2
+        println("computing horizon $(floor((ih+1)/2)-1) of $(floor(nh/2)-1)")
         # pull out the horizons bounding this geologic unit
-        inds = findall(x -> typeof(x) == Float64, H[:,ih])
-        h_l = H[inds,ih:ih+1]
+        if ih > nh
+            h_l = [0 maximum(C[:,2])]
+        else
+            inds = findall(x -> typeof(x) == Float64, H[:,ih])
+            h_l = H[inds,ih:ih+1]
+        end
         inds = findall(x -> typeof(x) == Float64, H[:,ih-2])
         h_u = H[inds,ih-2:ih-1]
-        # append the min and max values of x to the horizon (extend horizons to the model edges) 
-        h_l = [minimum(C[:,1]) h_l[1,2]; h_l; maximum(C[:,1]) h_l[end,2]]
-        h_u = [minimum(C[:,1]) h_u[1,2]; h_u maximum(C[:,1]) h_u[end,2]]
+        # append the min and max values of x to the horizon (extend horizons to the model edges)
+        y1 = [minimum(C[:,1]) h_l[1,2]]; y2 = [maximum(C[:,1]) h_l[end,2]]
+        h_l = [y1; h_l; y2]
+        y1 = [minimum(C[:,1]) h_u[1,2]]; y2 = [maximum(C[:,1]) h_u[end,2]]
+        h_u = [y1; h_u; y2]
         # the geologic unit these horizons correspond to
         iGU = Int64((ih-1)/2)   # GU 1 corresponds to horizon 1, which is H[:,3:4] because H[:,1:2] is the surface
         # now perform the extrapolation/interpolation for every model parameter within this geologic unit
@@ -40,9 +51,44 @@ function assignMeanStdCorrlen(WL,GU,C,H)
                 # skip this model parameter, as it is not within this geologic unit
                 continue
             end
-            # find top and bottom depth of this geologic interval at this model parameter's location
-            z_u = findHorizonDeph(C[im,1],h_u)
-            z_l = findHorizonDeph(C[im,1],h_l)
+            # 1. Stretch well log to match geologic interval at this model parameter's location
+            # find geologic interval thickness at this model parameter's location
+            z_u = findHorizonDepth(C[im,1],h_u)
+            z_l = findHorizonDepth(C[im,1],h_l)
+            Δz_model = z_l - z_u        # z is positive down; let's keep Δz positive, too
+            # well geologic interval thickness at the well location
+            Δz_well = wellLogUnits[iGU][end,2] - wellLogUnits[iGU][1,2]
+            # stretch factor
+            β = Δz_model/Δz_well
+            # stretch well log
+            Z_well = wellLogUnits[iGU][:,2] .* β
+            # 2. Shift well log to match geologic interval at this model parameter's location
+            # shift amount
+            z_shift = Z_well[1] - z_u
+            # perform shift
+            Z_well = Z_well .- z_shift
+            # # at this point, z_u and z_l should match Z_well[1] and Z_well[end]
+            # println("beta = $β")
+            # println("transformed well interval bounds: ($(Z_well[1]), $(Z_well[end])); ")
+            # println("model location interval bounds: ($z_u, $z_l)")
+            # println(" ")
+            # 3. Interpolate to shifted well log (z,ρ)
+            # find the two nearest well log values to this model parameter (in depth)
+            ind1, ind2 = findNearestNodes(Z_well,C[im,2])
+            # linear interpolation to find mean ρ at this location
+            z1 = Z_well[ind1]; z2 = Z_well[ind2]; ρ1 = wellLogUnits[iGU][ind1,3]; ρ2 = wellLogUnits[iGU][ind2,3];
+            meanRho[im] = linearInterpolate(ρ1,ρ2,z1,z2,C[im,2])
+            # linear interpolation to find std ρ at this location
+            ρ1 = wellLogUnits[iGU][ind1,4]; ρ2 = wellLogUnits[iGU][ind2,4];
+            stdRho[im] = linearInterpolate(ρ1,ρ2,z1,z2,C[im,2])
+            # 4. Assign correlation length to be interval thickness at model parameter location
+            if GU[im] == 1
+                corrLen[im] = 500
+            elseif GU[im] == maximum(GU)
+                corrLen[im] = 1500
+            else
+                corrLen[im] = Δz_model
+            end
         end
     end
 
@@ -72,3 +118,18 @@ function findHorizonDepth(x,h)
     return zinterp
 
 end
+
+function findNearestNodes(X,x)
+    # This function finds the nearest values in an array X to a point x
+    a = findmin(abs.(X .- x))
+    if x < X[a[2]]
+        ind1 = a[2] - 1; ind2 = a[2];
+    elseif x > X[a[2]]
+        ind1 = a[2]; ind2 = a[2] + 1;
+    elseif x == X[a[2]]
+        ind1 = a[2]; ind2 = a[2];
+    end
+    return ind1, ind2
+end
+
+# end
