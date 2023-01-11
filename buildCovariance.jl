@@ -1,5 +1,10 @@
 # This is the main function that builds the covariance from a set of model mesh element centroids
 # and a correlation kernel
+# The input arguments are 
+#   C: an nm x 2 array of model parameter centroids (x,z), where nm is # of model parameters
+#   kernel: a string specifying the correlation kernel to use
+#   l: the correlation length; could be a scalar, a function, or an nm x 2 array
+#   s: the model standard deviation; can be a scalar or an nm x 2 array
 
 using LinearAlgebra, SparseArrays
 include("kernels.jl")

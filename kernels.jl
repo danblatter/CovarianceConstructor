@@ -179,7 +179,9 @@ function buildMattiSpecial(C,l::Array{Float64,1},s::Array{Float64,1})
             li = l[i]          # correlation length for ith model parameter location
             lj = l[j]          # correlation length for jth model parameter location
             r = norm(C[i,:] - C[j,:])   # distance between these two model parameters
-            c = MattiSpecial(r,li,lj,s,s)
+            si = s[i]
+            sj = s[j]
+            c = MattiSpecial(r,li,lj,si,sj)
             lgc = (li+lj)/2; cGC = GaspariCohn(r,lgc)
             c = c * cGC
             
