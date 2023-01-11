@@ -12,12 +12,12 @@ function GaspariCohn(r,l)
     return b
 end
 
-function MattiSpecial(r,li,lj)
+function MattiSpecial(r,li,lj,si,sj)
     # non-stationary covariance kernel; each model location has its own correlation length and variance
     prefactor = abs(li)^(0.25)*abs(lj)^(0.25)*abs((li+lj)/2)^(-0.5)
-    expfactor = abs(r/((li+lj)/2))^(1.99)
+    expfactor = abs(r/((li+lj)/4))^(1.99)
     # expfactor = r' * r /((li+lj)/2)
-    b = prefactor * exp(-expfactor)
+    b = prefactor * exp(-expfactor) * si * sj
     return b
 end
 
@@ -74,7 +74,7 @@ function buildGaspariCohn(C,l)
     return B
 end
 
-function buildMattiSpecial(C,l::Number,T)
+function buildMattiSpecial(C,l::Number,s::Float64)
     println("lets compute using the Matti Special-GC kernel!")
 
     n = size(C,1)
@@ -90,11 +90,8 @@ function buildMattiSpecial(C,l::Number,T)
         li = l          # correlation length for this model parameter location
         for j=1:n
             lj = l      # correlation length for this model parameter location
-            if abs(T[i] - T[j]) == 2                 # these two model parameters are on opposite sides of a tear
-                li = 100; lj = 100
-            end
             r = norm(C[i,:] - C[j,:])   # distance between these two model parameters
-            c = MattiSpecial(r,li,lj)
+            c = MattiSpecial(r,li,lj,s,s)
             cGC = GaspariCohn(r,l)
             c = c * cGC
 
@@ -121,7 +118,7 @@ function buildMattiSpecial(C,l::Number,T)
     return B
 end
 
-function buildMattiSpecial(C,l::Function,T)
+function buildMattiSpecial(C,l::Function,s::Float64)
     println("lets compute using the Matti Special-GC kernel!")
 
     n = size(C,1)
@@ -137,17 +134,54 @@ function buildMattiSpecial(C,l::Function,T)
         for j=1:n
             x = C[i,1]; z = C[i,2]; li = l(x,z)          # correlation length for this model parameter location
             x = C[j,1]; z = C[j,2]; lj = l(x,z)      # correlation length for this model parameter location
-            if abs(T[i] - T[j]) == 2                 # these two model parameters are on opposite sides of a tear
-                lj = 100; li = 100
-            end
             r = norm(C[i,:] - C[j,:])   # distance between these two model parameters
-            c = MattiSpecial(r,li,lj)
+            c = MattiSpecial(r,li,lj,s,s)
             lgc = (li+lj)/2; cGC = GaspariCohn(r,lgc)
             c = c * cGC
-
-            if i == 3767 && j == 3635
-                println("i=$i; j=$j; li=$(li); lj=$(lj); cGC=$(cGC); lgc=$(lgc); tear=$(abs(T[i] - T[j]) == 2)")
+            
+            if c > 0                # only save non-zeros, since B is sparse
+                k = k + 1
+                M[k] = Int(i)
+                N[k] = Int(j)
+                V[k] = c
+            else
+                # println("model paramters $i and $j have exactly 0.0 covariance")
             end
+        end
+    end
+
+    M = M[1:k]
+    N = N[1:k]
+    V = V[1:k]
+
+    sparseratio = size(M,1)/(n^2)
+    println("This sparse covariance takes $(100*sparseratio)% of the memory of the dense matrix")
+
+    B = sparse(M,N,V,n,n)
+
+    return B
+end
+
+function buildMattiSpecial(C,l::Array{Float64,1},s::Array{Float64,1})
+    println("lets compute using the Matti Special-GC kernel!")
+
+    n = size(C,1)
+    M = zeros(Int64,n*n,1)
+    N = zeros(Int64,n*n,1)
+    V = zeros(n*n,1)
+
+    k = 0
+    for i=1:n
+        if mod(i,100) == 0          # record our progress (this can take a while...)
+            println("$i of $n")
+        end
+        for j=1:n
+            li = l[i]          # correlation length for ith model parameter location
+            lj = l[j]          # correlation length for jth model parameter location
+            r = norm(C[i,:] - C[j,:])   # distance between these two model parameters
+            c = MattiSpecial(r,li,lj,s,s)
+            lgc = (li+lj)/2; cGC = GaspariCohn(r,lgc)
+            c = c * cGC
             
             if c > 0                # only save non-zeros, since B is sparse
                 k = k + 1

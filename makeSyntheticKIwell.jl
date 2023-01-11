@@ -21,8 +21,8 @@ meanRho = zeros(nz)
 # standard deviation of log-resistivity
 stdRho = zeros(nz)
 
-dx = 100
-dz = 100
+dx = 50
+dz = 50
 
 for iz=1:nz
     if mod(iz,100) == 0
@@ -34,6 +34,7 @@ for iz=1:nz
     local q = findall(t -> abs.(t-x) < dx, C[:,1])
     local p = findall(t -> abs.(t-z) < dz, C[:,2])
     local inds = intersect(p,q)
+    println("number used to compute this well log point: $(length(inds))")
     meanRho[iz] = mean(Rho[inds])
     stdRho[iz] = 0.5*(abs.(maximum(Rho) - minimum(Rho)))
 end

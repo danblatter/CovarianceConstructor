@@ -5,14 +5,12 @@ using LinearAlgebra, SparseArrays
 include("kernels.jl")
 include("tearFunctions.jl")
 
-function buildCovariance(C,kernel,l,tear)
-
-T = makeTearArray(C,tear)
+function buildCovariance(C,kernel,l,s)
 
 if cmp(kernel,"GaspariCohn") == 0
     B = buildGaspariCohn(C,l)
 elseif cmp(kernel,"MattiSpecial_GC") == 0
-    B = buildMattiSpecial(C,l,T)
+    B = buildMattiSpecial(C,l,s)
 elseif cmp(kernel,"squaredExponential") == 0
     B = buildSquaredExponential(C,l)
 elseif cmp(kernel,"Exponential") == 0
@@ -33,7 +31,7 @@ else
     println("Warning! Covariance matrix is not positive definite!!!")
 end
 
-return B, T#, M, N, V
+return B #, M, N, V
 
 end
 

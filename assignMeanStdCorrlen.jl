@@ -28,7 +28,7 @@ function assignMeanStdCorrlen(WL,GU,C,H)
     nh = size(H,2)
 
     for ih=3:2:nh+2
-        println("computing horizon $(floor((ih+1)/2)-1) of $(floor(nh/2)-1)")
+        println("computing horizon $(floor((ih+1)/2)-1) of $(floor(nh/2))")
         # pull out the horizons bounding this geologic unit
         if ih > nh
             h_l = [0 maximum(C[:,2])]

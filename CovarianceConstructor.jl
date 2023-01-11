@@ -20,7 +20,9 @@ kernel = "MattiSpecial_GC"  # correlation kernel
 # l = 2500     # scalar correlation length (m)
 l(x::Float64,z::Float64) = 250 + 0.5*z      # correlation length as a function of x and z 
 
-B, T = buildCovariance(C,kernel,l,tear)
+s = 1.0       # leave s=1 unless using non-stationary kernel and want to specify non-stationary variance
+
+B = buildCovariance(C,kernel,l,s)
 
 figure(1)
 scatter(C[:,1],C[:,2],c=B[4000,:],s=2)
