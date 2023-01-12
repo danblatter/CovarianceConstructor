@@ -36,7 +36,7 @@ for iz=1:nz
     local inds = intersect(p,q)
     println("number used to compute this well log point: $(length(inds))")
     meanRho[iz] = mean(Rho[inds])
-    stdRho[iz] = 1.0*(abs.(maximum(Rho) - minimum(Rho)))
+    stdRho[iz] = 0.1*(abs.(maximum(Rho) - minimum(Rho)))
 end
 
 rhoWellLog = [X Z meanRho stdRho]

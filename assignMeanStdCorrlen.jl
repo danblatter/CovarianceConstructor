@@ -57,11 +57,11 @@ function assignMeanStdCorrlen(WL,GU,C,H)
             z_l = findHorizonDepth(C[im,1],h_l)
             Δz_model = z_l - z_u        # z is positive down; let's keep Δz positive, too
             # well geologic interval thickness at the well location
-            Δz_well = wellLogUnits[iGU][end,2] - wellLogUnits[iGU][1,2]
+            Δz_well = WL[iGU][end,2] - WL[iGU][1,2]
             # stretch factor
             β = Δz_model/Δz_well
             # stretch well log
-            Z_well = wellLogUnits[iGU][:,2] .* β
+            Z_well = WL[iGU][:,2] .* β
             # 2. Shift well log to match geologic interval at this model parameter's location
             # shift amount
             z_shift = Z_well[1] - z_u
@@ -76,10 +76,10 @@ function assignMeanStdCorrlen(WL,GU,C,H)
             # find the two nearest well log values to this model parameter (in depth)
             ind1, ind2 = findNearestNodes(Z_well,C[im,2])
             # linear interpolation to find mean ρ at this location
-            z1 = Z_well[ind1]; z2 = Z_well[ind2]; ρ1 = wellLogUnits[iGU][ind1,3]; ρ2 = wellLogUnits[iGU][ind2,3];
+            z1 = Z_well[ind1]; z2 = Z_well[ind2]; ρ1 = WL[iGU][ind1,3]; ρ2 = WL[iGU][ind2,3];
             meanRho[im] = linearInterpolate(ρ1,ρ2,z1,z2,C[im,2])
             # linear interpolation to find std ρ at this location
-            ρ1 = wellLogUnits[iGU][ind1,4]; ρ2 = wellLogUnits[iGU][ind2,4];
+            ρ1 = WL[iGU][ind1,4]; ρ2 = WL[iGU][ind2,4];
             stdRho[im] = linearInterpolate(ρ1,ρ2,z1,z2,C[im,2])
             # 4. Assign correlation length to be interval thickness at model parameter location
             if GU[im] == 1

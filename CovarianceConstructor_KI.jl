@@ -1,6 +1,6 @@
 # use to create covariance matrix for the King Island model
 
-using DelimitedFiles, JLD, SuiteSparse, PyPlot
+using DelimitedFiles, JLD, SparseArrays, PyPlot, StatsBase
 include("buildCovariance.jl")
 include("getCovSquareRoot.jl")
 include("assignGeologicUnits_modelParameters.jl")
@@ -42,5 +42,33 @@ zmax = maximum(C[:,2])     # make sure the 'well log' extends to cover the deepe
 wellLogUnits = assignGeologicUnits_wellLog(wellLog,H,zmax)
 
 meanRho, stdRho, corrLen = assignMeanStdCorrlen(wellLogUnits,GU,C,H)
+
+B = buildCovariance(C,kernel,corrLen,stdRho)
+
+figure(1)
+scatter(C[:,1],C[:,2],c=B[4000,:],s=2)
+plt.xlim([-2e4, 2e4])
+plt.ylim([0, 2e4])
+plt.gca().invert_yaxis()
+
+save("covB_KI.jld","B",B)
+
+println("computing matrix square root...")
+L = getCovSquareRoot(B,"false")
+
+println("drawing random sample...")
+# draw a random sample from N(θ_mean,B)
+ξ = randn(n)
+θ = L*ξ .+ meanRho
+
+println("plotting...")
+# plot this sample
+
+figure(2)
+scatter(C[:,1],C[:,2],c=θ,s=2)
+plt.xlim([-5e3, 7e3])
+plt.ylim([0, 2.5e3])
+plt.gca().invert_yaxis()
+colorbar()
 
 

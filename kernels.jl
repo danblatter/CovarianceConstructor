@@ -15,7 +15,7 @@ end
 function MattiSpecial(r,li,lj,si,sj)
     # non-stationary covariance kernel; each model location has its own correlation length and variance
     prefactor = abs(li)^(0.25)*abs(lj)^(0.25)*abs((li+lj)/2)^(-0.5)
-    expfactor = abs(r/((li+lj)/4))^(1.99)
+    expfactor = abs(r/((li+lj)/2))^(1.99)
     # expfactor = r' * r /((li+lj)/2)
     b = prefactor * exp(-expfactor) * si * sj
     return b
@@ -166,15 +166,16 @@ function buildMattiSpecial(C,l::Array{Float64,1},s::Array{Float64,1})
     println("lets compute using the Matti Special-GC kernel!")
 
     n = size(C,1)
+    println("mean of std: $(mean(s))")
     M = zeros(Int64,n*n,1)
     N = zeros(Int64,n*n,1)
     V = zeros(n*n,1)
 
     k = 0
     for i=1:n
-        if mod(i,100) == 0          # record our progress (this can take a while...)
-            println("$i of $n")
-        end
+        # if mod(i,100) == 0          # record our progress (this can take a while...)
+        #     println("$i of $n")
+        # end
         for j=1:n
             li = l[i]          # correlation length for ith model parameter location
             lj = l[j]          # correlation length for jth model parameter location
@@ -182,7 +183,7 @@ function buildMattiSpecial(C,l::Array{Float64,1},s::Array{Float64,1})
             si = s[i]
             sj = s[j]
             c = MattiSpecial(r,li,lj,si,sj)
-            lgc = (li+lj)/2; cGC = GaspariCohn(r,lgc)
+            lgc = (li+lj)/2; cGC = GaspariCohn(r,2*lgc)
             c = c * cGC
             
             if c > 0                # only save non-zeros, since B is sparse
