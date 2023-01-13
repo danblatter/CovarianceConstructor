@@ -1,6 +1,6 @@
 # This file contains the various correlation kernels to use within buildCovariance
 
-function GaspariCohn(r,l)
+function GaspariCohn(r::Float64,l::Float64)
     # Gaspari-Cohn correlation kernel. Takes correlation length (l) and distance between two pts (r) as inputs
     if r < l
         b = -(1/4)*(r/l)^5 + (1/2)*(r/l)^4 +(5/8)*(r/l)^3 - (5/3)*(r/l)^2 + 1
@@ -10,6 +10,29 @@ function GaspariCohn(r,l)
         b = 0
     end
     return b
+end
+
+function GaspariCohn(R::Array{Float64,1},L::Array{Float64,1})
+    # Gaspari-Cohn correlation kernel. Takes correlation length (l) and distance between two pts (r) as inputs
+    if length(R) != length(L)
+        println("if you want anisotropic covariance, the number of correlation lengths must equal")
+        println("the number of spatial dimensions! Here the former is $(length(L)) while the latter is $(length(R))")
+    end
+    
+    b = zeros(length(R))
+    for ix in eachindex(R)
+        r = R[ix]; l = L[ix]
+        if r < l
+            b[ix] = -(1/4)*(r/l)^5 + (1/2)*(r/l)^4 +(5/8)*(r/l)^3 - (5/3)*(r/l)^2 + 1
+        elseif r < 2*l
+            b[ix] = (1/12)*(r/l)^5 - (1/2)*(r/l)^4 +(5/8)*(r/l)^3 + (5/3)*(r/l)^2 - 5*(r/l) + 4 - (2/3)*(l/r)
+        else
+            b[ix] = 0
+        end
+    end
+
+    return prod(b)
+
 end
 
 function MattiSpecial(r,li,lj,si,sj)
@@ -33,9 +56,15 @@ function exponential(r,l)
     return b
 end
 
-function buildGaspariCohn(C,l)
+function buildGaspariCohn(C::Array{Float64,2},l::Array{Float64,1})
 
     println("lets compute using the Gaspari-Cohn kernel!")
+
+    # check that the number of spatial dimensions is equal to the number of correlation lengths
+    if size(C,2) != length(l)
+        println("the number of spatial dimensions is not equal to the number of correlation lengths")
+        println("# of spatial dimensions = $(size(C,2)); # of correlation lengths = $(length(l))")
+    end
 
     n = size(C,1)
     M = zeros(Int64,n*n,1)
@@ -48,11 +77,9 @@ function buildGaspariCohn(C,l)
             println("$i of $n")
         end
         for j=1:n
-            r = norm(C[i,:] - C[j,:])
+            # r = norm(C[i,:] - C[j,:])
+            r = abs.(C[i,:] .- C[j,:])
             c = GaspariCohn(r,l)
-#=             if abs(T[i] - T[j]) == 2    # these two model parameters are on opposite sides of a tear
-                c = 0.0*c               # skip to next model parameter (correlation is zero by default)
-            end =#
             if c > 0                # only save non-zeros, since B is sparse
                 k = k + 1
                 M[k] = Int(i)

@@ -20,7 +20,8 @@ tear = Inf                 # uncomment this line if you don't wish to add a corr
 #   Note on the Matti special: it can be called with three types of arguments for "l"
 #   1. a scalar; l is the same everywhere
 #   2. a function; must be a function of x and z
-kernel = "MattiSpecial_GC"  # correlation kernel
+# kernel = "MattiSpecial_GC"  # correlation kernel
+kernel = "GaspariCohn"  # correlation kernel
 
 # load in the well log
 println("loading well log")
@@ -43,7 +44,13 @@ wellLogUnits = assignGeologicUnits_wellLog(wellLog,H,zmax)
 
 meanRho, stdRho, corrLen = assignMeanStdCorrlen(wellLogUnits,GU,C,H)
 
+if cmp(kernel,"MattiSpecial_GC") == 0
 B = buildCovariance(C,kernel,corrLen,stdRho)
+else
+    corrLen = [1000.0; 75.0]
+    B = buildCovariance(C,kernel,corrLen,stdRho)
+    B = mean(stdRho) .* B
+end
 
 figure(1)
 scatter(C[:,1],C[:,2],c=B[4000,:],s=2)
