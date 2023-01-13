@@ -200,9 +200,9 @@ function buildMattiSpecial(C,l::Array{Float64,1},s::Array{Float64,1})
 
     k = 0
     for i=1:n
-        # if mod(i,100) == 0          # record our progress (this can take a while...)
-        #     println("$i of $n")
-        # end
+        if mod(i,250) == 0          # record our progress (this can take a while...)
+            println("$i of $n")
+        end
         for j=1:n
             li = l[i]          # correlation length for ith model parameter location
             lj = l[j]          # correlation length for jth model parameter location

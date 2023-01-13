@@ -83,11 +83,11 @@ function assignMeanStdCorrlen(WL,GU,C,H)
             stdRho[im] = linearInterpolate(ρ1,ρ2,z1,z2,C[im,2])
             # 4. Assign correlation length to be interval thickness at model parameter location
             if GU[im] == 1
-                corrLen[im] = 400
+                corrLen[im] = 150
             elseif GU[im] == maximum(GU)
-                corrLen[im] = 400
+                corrLen[im] = 150
             else
-                corrLen[im] = 400
+                corrLen[im] = 150
             end
         end
     end

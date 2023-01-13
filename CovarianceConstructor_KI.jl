@@ -20,8 +20,8 @@ tear = Inf                 # uncomment this line if you don't wish to add a corr
 #   Note on the Matti special: it can be called with three types of arguments for "l"
 #   1. a scalar; l is the same everywhere
 #   2. a function; must be a function of x and z
-# kernel = "MattiSpecial_GC"  # correlation kernel
-kernel = "GaspariCohn"  # correlation kernel
+kernel = "MattiSpecial_GC"  # correlation kernel
+# kernel = "GaspariCohn"  # correlation kernel
 
 # load in the well log
 println("loading well log")
@@ -52,10 +52,10 @@ else
     B = mean(stdRho) .* B
 end
 
-figure(1)
+figure(1,figsize=(6,2.5))
 scatter(C[:,1],C[:,2],c=B[4000,:],s=2)
-plt.xlim([-2e4, 2e4])
-plt.ylim([0, 2e4])
+plt.xlim([-5e3, 7e3])
+plt.ylim([0, 2.25e3])
 plt.gca().invert_yaxis()
 
 save("covB_KI.jld","B",B)
@@ -71,11 +71,22 @@ println("drawing random sample...")
 println("plotting...")
 # plot this sample
 
-figure(2)
-scatter(C[:,1],C[:,2],c=θ,s=2)
+figure(2,figsize=(6,2.5))
+scatter(C[:,1],C[:,2],c=θ,s=2,cmap=ColorMap("turbo"))
 plt.xlim([-5e3, 7e3])
-plt.ylim([0, 2.5e3])
+plt.ylim([0, 2.25e3])
 plt.gca().invert_yaxis()
 colorbar()
 
+figure(3,figsize=(6,2.5))
+scatter(C[:,1],C[:,2],c=trueRho,s=2,cmap=ColorMap("turbo"))
+plt.xlim([-5e3, 7e3])
+plt.ylim([0, 2.25e3])
+plt.gca().invert_yaxis()
+colorbar()
 
+figure(4,figsize=(6,2.5))
+scatter(C[:,1],C[:,2],c=GU,s=2,cmap=ColorMap("turbo"))
+plt.xlim([-5e3, 7e3])
+plt.ylim([0, 2.25e3])
+plt.gca().invert_yaxis()
