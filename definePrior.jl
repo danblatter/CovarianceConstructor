@@ -27,23 +27,17 @@ function assignMeanStdCorrlen(WL,GU,C,H)
 
     meanRho = zeros(size(GU))
     stdRho = zeros(size(GU))
-    # corrLen = zeros(size(GU))
 
     nh = length(H)
 
     for ih=2:nh #ih=3:2:nh+2
         println("geologic unit $(ih-1) of $(nh-1)")
-        # println("computing horizon $(floor((ih+1)/2)-1) of $(floor(nh/2))")
         # pull out the horizons bounding this geologic unit
         if ih > nh
             h_l = [0 maximum(C[:,2])]
         else
-            # inds = findall(x -> typeof(x) == Float64, H[:,ih])
-            # h_l = H[inds,ih:ih+1]
             h_l = H[ih]
         end
-        # inds = findall(x -> typeof(x) == Float64, H[:,ih-2])
-        # h_u = H[inds,ih-2:ih-1]
         h_u = H[ih-1]
         # append the min and max values of x to the horizon (extend horizons to the model edges)
         y1 = [minimum(C[:,1]) h_l[1,2]]; y2 = [maximum(C[:,1]) h_l[end,2]]
@@ -51,7 +45,6 @@ function assignMeanStdCorrlen(WL,GU,C,H)
         y1 = [minimum(C[:,1]) h_u[1,2]]; y2 = [maximum(C[:,1]) h_u[end,2]]
         h_u = [y1; h_u; y2]
         # the geologic unit these horizons correspond to
-        # iGU = Int64((ih-1)/2)   # GU 1 corresponds to horizon 1, which is H[:,3:4] because H[:,1:2] is the surface
         iGU = ih-1
         # now perform the extrapolation/interpolation for every model parameter within this geologic unit
         for im in eachindex(GU)
@@ -75,11 +68,6 @@ function assignMeanStdCorrlen(WL,GU,C,H)
             z_shift = Z_well[1] - z_u
             # perform shift
             Z_well = Z_well .- z_shift
-            # # at this point, z_u and z_l should match Z_well[1] and Z_well[end]
-            # println("beta = $β")
-            # println("transformed well interval bounds: ($(Z_well[1]), $(Z_well[end])); ")
-            # println("model location interval bounds: ($z_u, $z_l)")
-            # println(" ")
             # 3. Interpolate to shifted well log (z,ρ)
             # find the two nearest well log values to this model parameter (in depth)
             ind1, ind2 = findNearestNodes(Z_well,C[im,2])
@@ -129,46 +117,25 @@ end
 
 function assignGeologicUnits_wellLog(wellLog,H,zmax)
 
-#    # make sure there are an even number of columns in H, and determine how many horizons
-#    if mod(size(H,2),2) != 0
-#         println("There's an odd number of columns in your horizon file")
-#         println("Columns in this file should be in pairs (x first, then z)")
-#     else
-#         nh = Int64(size(H,2))
-#     end   
-
     nh = length(H)
 
     wellLogUnits = Array{Float64}[]     # construct an as-yet empty vector of arrays
                                         # each array in this vector will be a well log unit
 
     global zinterp = 0  # placeholder value, just declaring it here so it persists beyond while loop
-    # ih = 3     # horizons are listed shallowest-to-deepest, first horizon is surface elevation
     ih = 2
     while ih <= nh   
         println("ih = $ih")
         # pull out this horizon only
-        # inds = findall(x -> typeof(x) == Float64, H[:,ih])
-        # h = H[inds,ih:ih+1]
         h = H[ih]
         # x-location of the well (assume it's not deviated)
         x_well = mean(wellLog[:,1])
         # find the nearest two horizon nodes to the well 
-        # a = findmin(abs.(h[:,1] .- x_well))
-        # if x_well < h[a[2],1]
-        #     ind1 = a[2] - 1; ind2 = a[2];
-        # elseif x_well > h[a[2],1]
-        #     ind1 = a[2]; ind2 = a[2] + 1;
-        # elseif x_well == h[a[2],1]
-        #     ind1 = a[2]; ind2 = a[2];
-        # end
         ind1,ind2 = findNearestNodes(h[:,1],x_well)
         # find depth to this horizon at location of well (assume it's not deviated for now)
         x1 = h[ind1,1]; x2 = h[ind2,1]; z1 = h[ind1,2]; z2 = h[ind2,2]; x = x_well;
-        if ih == 2 #3
+        if ih == 2 
             # shallowest horizon; zprev is the top of the model
-            # inds_ = findall(x -> typeof(x) == Float64, H[:,1])
-            # h_ = H[inds_,1:2]
             h_ = H[1]
             # find surface elevation at location of well (assume it's not deviated for now)
             ind1,ind2 = findNearestNodes(h_[:,1],x_well)
@@ -186,7 +153,6 @@ function assignGeologicUnits_wellLog(wellLog,H,zmax)
         q = findall(t -> t .> zprev, wellLog[:,2])
         inds = intersect(p,q)
         println("Looking between $zprev and $zinterp, we have $(length(inds)) well log values")
-        # println("well log here: $(wellLog[:,2])")
         tmp = wellLog[inds,:]
         # tack an upper and lower row to represent the bounds of this geologic unit
         thisUnit = [tmp[1,1] zprev tmp[1,3:4]'; tmp; tmp[end,1] zinterp tmp[end,3:4]']
@@ -196,20 +162,6 @@ function assignGeologicUnits_wellLog(wellLog,H,zmax)
         ih = ih + 1
 
     end
-
-    # println("final geologic unit...")
-    # # do it one last time for the last geologic unit (which has no bounding horizon on the bottom)
-    # zprev = zinterp
-    # zinterp = zmax
-    # # find all the well log values in this geologic unit
-    # p = findall(t -> t .< zinterp, wellLog[:,2])
-    # q = findall(t -> t .> zprev, wellLog[:,2])
-    # inds = intersect(p,q)
-    # tmp = wellLog[inds,:]
-    # # tack an upper and lower row to represent the bounds of this geologic unit
-    # thisUnit = [tmp[1,1] zprev tmp[1,3:4]'; tmp; tmp[end,1] zinterp tmp[end,3:4]']
-    # # add this well log section to our vector of arrays
-    # push!(wellLogUnits,thisUnit)
 
     return wellLogUnits
 
@@ -239,14 +191,6 @@ function assignGeologicUnits_modelParameters(H,C)
     # GU is the output: a vector of the same length as the model with an integer at each value
     # corresponding to the geologic unit that model parameter resides within
 
-    # make sure there are an even number of columns in H, and determine how many horizons
-    # if mod(size(H,2),2) != 0
-    #     println("There's an odd number of columns in your horizon file")
-    #     println("Columns in this file should be in pairs (x first, then z)")
-    # else
-    #     nh = Int64(size(H,2))
-    # end    
-
     nh = length(H)
     println("we have $nh geologic surfaces, including top and bottom of model")
 
@@ -259,12 +203,9 @@ function assignGeologicUnits_modelParameters(H,C)
             println("computing $ic of $(size(C,1))")
         end
         foundGeologicUnit = false 
-        # ih = 3
         ih = 2      # first surface must be the upper boundary of the model
         while !foundGeologicUnit
             # # pull out this horizon only
-            # inds = findall(x -> typeof(x) == Float64, H[:,ih])
-            # h = H[inds,ih:ih+1]
             h = H[ih]
             # append the min and max values of x to the horizon (extend horizons to the model edges) 
             h = [minimum(C[:,1]) h[1,2]; h; maximum(C[:,1]) h[end,2]]
@@ -276,22 +217,15 @@ function assignGeologicUnits_modelParameters(H,C)
             zinterp = linearInterpolate(z1,z2,x1,x2,x) 
             # determine if this model parameter is in this geologic unit
             if z <= zinterp
-                # GU[ic] = Int64((ih+1)/2 - 1)
                 GU[ic] = ih - 1
                 foundGeologicUnit = true
-            elseif z > zinterp && ih == nh #(ih+1) == nh
+            elseif z > zinterp && ih == nh
                 # we're below the last horizon
-                # GU[ic] = Int64(floor(nh/2))     # final unit is labeled as: 1 + number of horizons
                 GU[ic] = nh
                 foundGeologicUnit = true
             else 
                 # move to the next horizon
-                # ih = ih + 2
                 ih = ih + 1
-                # debugging
-                if ih > nh 
-                    println("z=$z; zinterp=$zinterp; ic=$ic")
-                end
             end
         end
     end
