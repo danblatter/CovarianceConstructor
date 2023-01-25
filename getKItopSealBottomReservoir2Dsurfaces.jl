@@ -4,7 +4,7 @@
 # output is an nx2 array where n is the number of (x,y) coordinates along the θ-profile where
 # the top seal and bottom reservoir surfaces were interpolated.
 
-using DelimitedFiles, LinearAlgebra, StatsBase
+using DelimitedFiles, LinearAlgebra, Statistics
 include("myModelDecimator.jl")
 
 # read in the 2D slice (at angle θ) through the 3D model
@@ -19,7 +19,8 @@ myslice = readdlm("KI_60.dat", ',', Float64)
 tmpind = findnext(diff(myslice[:,1]) .< 0, 1)
 myslice = myslice[1:tmpind,:]
 topSealbaseResSlice = zeros(tmpind,4)
-outputFilename = "KI60_topSeal_botRes.txt"
+topSealFilename = "KI60_topSeal.txt"
+baseResFilename = "KI60_baseRes.txt"
 
 # read in the top of seal surface
 # the columns of this array are defined as follows:
@@ -112,5 +113,11 @@ for (im,mvec) in enumerate(eachrow(myslice[:,4:5]))
     topSealbaseResSlice[im,3:4] = [myslice[im,1] baseRes[indsxy[min_out[2]],3]]
 end
 
-writedlm(outputFilename,topSealbaseResSlice)
+# MARE2DEM assumes z is positive down, which is the opposite convention from the top seal and
+# base reservoir surface files 
+topSealbaseResSlice[:,2] = -topSealbaseResSlice[:,2]
+topSealbaseResSlice[:,4] = -topSealbaseResSlice[:,4]
+
+writedlm(topSealFilename,topSealbaseResSlice[:,1:2])
+writedlm(baseResFilename,topSealbaseResSlice[:,3:4])
 

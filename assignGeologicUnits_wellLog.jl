@@ -39,9 +39,7 @@ function assignGeologicUnits_wellLog(wellLog,H,zmax)
                                         # each array in this vector will be a well log unit
 
     global zinterp = 0  # placeholder value, just declaring it here so it persists beyond while loop
-    ## ih = nh - 1     # horizons are listed deepest-to-shallowest, we will iterate shallowest-to-deepest
     ih = 3     # horizons are listed shallowest-to-deepest, first horizon is surface elevation
-    ## while ih > 0
     while ih < nh   
         println("ih = $ih")
         # pull out this horizon only
@@ -58,6 +56,7 @@ function assignGeologicUnits_wellLog(wellLog,H,zmax)
         elseif x_well == h[a[2],1]
             ind1 = a[2]; ind2 = a[2];
         end
+        println("h: $h")
         # find depth to this horizon at location of well (assume it's not deviated for now)
         x1 = h[ind1,1]; x2 = h[ind2,1]; z1 = h[ind1,2]; z2 = h[ind2,2]; x = x_well;
         if ih == 3
@@ -76,6 +75,8 @@ function assignGeologicUnits_wellLog(wellLog,H,zmax)
         p = findall(t -> t .< zinterp, wellLog[:,2])
         q = findall(t -> t .> zprev, wellLog[:,2])
         inds = intersect(p,q)
+        println("Looking between $zprev and $zinterp, we have $(length(inds)) well log values")
+        println("well log here: $(wellLog[:,2])")
         tmp = wellLog[inds,:]
         # tack an upper and lower row to represent the bounds of this geologic unit
         thisUnit = [tmp[1,1] zprev tmp[1,3:4]'; tmp; tmp[end,1] zinterp tmp[end,3:4]']
@@ -86,19 +87,19 @@ function assignGeologicUnits_wellLog(wellLog,H,zmax)
 
     end
 
-    println("final geologic unit...")
-    # do it one last time for the last geologic unit (which has no bounding horizon on the bottom)
-    zprev = zinterp
-    zinterp = zmax
-    # find all the well log values in this geologic unit
-    p = findall(t -> t .< zinterp, wellLog[:,2])
-    q = findall(t -> t .> zprev, wellLog[:,2])
-    inds = intersect(p,q)
-    tmp = wellLog[inds,:]
-    # tack an upper and lower row to represent the bounds of this geologic unit
-    thisUnit = [tmp[1,1] zprev tmp[1,3:4]'; tmp; tmp[end,1] zinterp tmp[end,3:4]']
-    # add this well log section to our vector of arrays
-    push!(wellLogUnits,thisUnit)
+    # println("final geologic unit...")
+    # # do it one last time for the last geologic unit (which has no bounding horizon on the bottom)
+    # zprev = zinterp
+    # zinterp = zmax
+    # # find all the well log values in this geologic unit
+    # p = findall(t -> t .< zinterp, wellLog[:,2])
+    # q = findall(t -> t .> zprev, wellLog[:,2])
+    # inds = intersect(p,q)
+    # tmp = wellLog[inds,:]
+    # # tack an upper and lower row to represent the bounds of this geologic unit
+    # thisUnit = [tmp[1,1] zprev tmp[1,3:4]'; tmp; tmp[end,1] zinterp tmp[end,3:4]']
+    # # add this well log section to our vector of arrays
+    # push!(wellLogUnits,thisUnit)
 
     return wellLogUnits
 

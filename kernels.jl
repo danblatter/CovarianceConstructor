@@ -146,6 +146,10 @@ function buildMattiSpecial(C,l::Number,s::Float64)
 end
 
 function buildMattiSpecial(C,l::Function,s::Float64)
+    # in order for this covariance constructor function and the kernel function it calls to be isotropic
+    # or anisotropic in an arbitrary number of spatial dimensions, the inputs to this function must be
+    # arrays. Passing in scalar Float64s will not work, sadly. If you want to pass in a scalar, pass it
+    # in as [x] instead and Julia will recognize it as an array
     println("lets compute using the Matti Special-GC kernel!")
 
     n = size(C,1)
