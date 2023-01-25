@@ -3,9 +3,11 @@
 using DelimitedFiles, JLD, SparseArrays, PyPlot, Statistics
 include("buildCovariance.jl")
 include("getCovSquareRoot.jl")
-include("assignGeologicUnits_modelParameters.jl")
-include("assignGeologicUnits_wellLog.jl")
-include("assignMeanStdCorrlen.jl")
+# include("assignGeologicUnits_modelParameters.jl")
+include("definePrior.jl")
+using .definePrior
+# include("assignGeologicUnits_wellLog.jl")
+# include("assignMeanStdCorrlen.jl")
 
 println("reading in the model centroids")
 # C = readdlm("KI_60centroids_fullyMeshed.txt")  # model mesh element (model parameter) locations
@@ -33,12 +35,14 @@ wellLog = readdlm("KIrhoWellLog_justReservoir.txt")
 # load in the geologic horizons
 println("loading geologic horizons")
 # H = readdlm("KI60horizons_3_wSurface.txt")
-# s1 = readdlm("KI60_topSeal.txt")
-# s2 = readdlm("KI60_baseRes.txt")
-# H = [s1 s2]
+s1 = readdlm("Surfaces/KI60_topSeal.txt")
+s2 = readdlm("Surfaces/KI60_topSeal_mine.txt")
+s3 = readdlm("Surfaces/KI60_topRes.txt")
+s4 = readdlm("Surfaces/KI60_baseRes.txt")
+H = Array[s1,s2,s3,s4]
 # for the reservoir + internal hand-picked surfaces one, this is a temporary fix
-H = readdlm("KI60_justReservoirAndInternal.txt")
-H[13:end,7:8] = H[13:end,3:4]; H[13:end,3:4] = H[13:end,5:6];
+# H = readdlm("KI60_justReservoirAndInternal.txt")
+# H[13:end,7:8] = H[13:end,3:4]; H[13:end,3:4] = H[13:end,5:6];
 
 # get the geologic unit assignment vector
 println("assigning each model parameter to a geologic unit")
@@ -96,7 +100,16 @@ plt.gca().invert_yaxis()
 colorbar()
 
 figure(4,figsize=(6,2.5))
+scatter(C[:,1],C[:,2],c=meanRho,s=2,cmap=ColorMap("turbo"))
+plt.xlim([-5e3, 7e3])
+plt.ylim([0, 2.25e3])
+plt.gca().invert_yaxis()
+
+figure(5,figsize=(6,2.5))
 scatter(C[:,1],C[:,2],c=GU,s=2,cmap=ColorMap("turbo"))
 plt.xlim([-5e3, 7e3])
 plt.ylim([0, 2.25e3])
 plt.gca().invert_yaxis()
+for ip in eachindex(wellLogUnits)
+    plot(wellLogUnits[ip][:,1],wellLogUnits[ip][:,2])
+end
