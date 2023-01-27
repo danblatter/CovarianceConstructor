@@ -5,15 +5,16 @@ include("buildCovariance.jl")
 include("getCovSquareRoot.jl")
 # include("assignGeologicUnits_modelParameters.jl")
 include("definePrior.jl")
+include("makeSyntheticKIwell.jl")
 using .definePrior
 # include("assignGeologicUnits_wellLog.jl")
 # include("assignMeanStdCorrlen.jl")
 
 println("reading in the model centroids")
 # C = readdlm("KI_60centroids_fullyMeshed.txt")  # model mesh element (model parameter) locations
-C = readdlm("KI_60centroids_justReservoir.txt")  # model mesh element (model parameter) locations
+C = readdlm("KI_60centroids_justReservoir2.txt")  # model mesh element (model parameter) locations
 # trueRho = readdlm("KI_60rho_fullyMeshed.txt")  # model mesh element (model parameter) locations
-trueRho = readdlm("KI_60rho_justReservoir.txt")  # model mesh element (model parameter) locations
+trueRho = readdlm("KI_60rho_justReservoir2.txt")  # model mesh element (model parameter) locations
 n = size(C,1) 
 
 # kernel = "GaspariCohn"  # correlation kernel
@@ -27,10 +28,13 @@ n = size(C,1)
 # kernel = "MattiSpecial_GC"  # correlation kernel
 kernel = "GaspariCohn"  # correlation kernel
 
-# load in the well log
+# load in the well log; we'll build the prior mean and standard deviation models from this (along with 
+# geologic/seismic surfaces)
 println("loading well log")
 # wellLog = readdlm("KIrhoWellLog.txt")
-wellLog = readdlm("KIrhoWellLog_justReservoir.txt")
+# wellLog = readdlm("KIrhoWellLog_justReservoir.txt")
+wellX = 0       # injection well location (m)
+wellLog = makeSyntheticKIwell(C,trueRho,wellX)
 
 # load in the geologic horizons
 println("loading geologic horizons")

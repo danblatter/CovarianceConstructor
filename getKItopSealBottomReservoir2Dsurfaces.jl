@@ -15,12 +15,12 @@ include("myModelDecimator.jl")
 # 4. x (original x-axis, θ=0)
 # 5. y (original y-axis, θ=90)
 println("loading in our 2D model slice")
-myslice = readdlm("KI_60.dat", ',', Float64)
+myslice = readdlm("/Users/Dan/Documents/Research/CarbonSequestration/modelViewing/slicesToView/KIslices/KI_60.dat", ',', Float64)
 tmpind = findnext(diff(myslice[:,1]) .< 0, 1)
 myslice = myslice[1:tmpind,:]
 topSealbaseResSlice = zeros(tmpind,4)
-topSealFilename = "KI60_topSeal.txt"
-baseResFilename = "KI60_baseRes.txt"
+topSealFilename = "Surfaces/KI60_topSeal.txt"
+baseResFilename = "Surfaces/KI60_baseRes.txt"
 
 # read in the top of seal surface
 # the columns of this array are defined as follows:

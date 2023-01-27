@@ -62,7 +62,9 @@ function assignMeanStdCorrlen(WL,GU,C,H)
             # stretch factor
             β = Δz_model/Δz_well
             # stretch well log
-            Z_well = WL[iGU][:,2] .* β
+            Z_well = WL[iGU][:,2] .* β .* 1.05      # the 1.05 is to give the interpolation a little wiggle
+                                                    # room to ensure that the stretch step never produces a
+                                                    # stretched well log that is shorter than the model region
             # 2. Shift well log to match geologic interval at this model parameter's location
             # shift amount
             z_shift = Z_well[1] - z_u
@@ -71,6 +73,11 @@ function assignMeanStdCorrlen(WL,GU,C,H)
             # 3. Interpolate to shifted well log (z,ρ)
             # find the two nearest well log values to this model parameter (in depth)
             ind1, ind2 = findNearestNodes(Z_well,C[im,2])
+            if ind2 > length(Z_well)
+                println("ind2=$ind2; length of Z_well=$(length(Z_well))")
+                println("Z_well: $Z_well")
+                println("x: $(C[im,2])")
+            end
             # linear interpolation to find mean ρ at this location
             z1 = Z_well[ind1]; z2 = Z_well[ind2]; ρ1 = WL[iGU][ind1,3]; ρ2 = WL[iGU][ind2,3];
             meanRho[im] = linearInterpolate(ρ1,ρ2,z1,z2,C[im,2])
