@@ -3,12 +3,8 @@
 using DelimitedFiles, JLD, SparseArrays, PyPlot, Statistics
 include("buildCovariance.jl")
 include("getCovSquareRoot.jl")
-# include("assignGeologicUnits_modelParameters.jl")
 include("definePrior.jl")
-include("makeSyntheticKIwell.jl")
 using .definePrior
-# include("assignGeologicUnits_wellLog.jl")
-# include("assignMeanStdCorrlen.jl")
 
 println("reading in the model centroids")
 # C = readdlm("KI_60centroids_fullyMeshed.txt")  # model mesh element (model parameter) locations
@@ -31,22 +27,16 @@ kernel = "GaspariCohn"  # correlation kernel
 # load in the well log; we'll build the prior mean and standard deviation models from this (along with 
 # geologic/seismic surfaces)
 println("loading well log")
-# wellLog = readdlm("KIrhoWellLog.txt")
-# wellLog = readdlm("KIrhoWellLog_justReservoir.txt")
 wellX = 0       # injection well location (m)
 wellLog = makeSyntheticKIwell(C,trueRho,wellX)
 
 # load in the geologic horizons
 println("loading geologic horizons")
-# H = readdlm("KI60horizons_3_wSurface.txt")
 s1 = readdlm("Surfaces/KI60_topSeal.txt")
 s2 = readdlm("Surfaces/KI60_topSeal_mine.txt")
 s3 = readdlm("Surfaces/KI60_topRes.txt")
 s4 = readdlm("Surfaces/KI60_baseRes.txt")
 H = Array[s1,s2,s3,s4]
-# for the reservoir + internal hand-picked surfaces one, this is a temporary fix
-# H = readdlm("KI60_justReservoirAndInternal.txt")
-# H[13:end,7:8] = H[13:end,3:4]; H[13:end,3:4] = H[13:end,5:6];
 
 # get the geologic unit assignment vector
 println("assigning each model parameter to a geologic unit")
