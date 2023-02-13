@@ -10,10 +10,10 @@ using .definePrior
 println("reading in the model centroids")
 # C = readdlm("KI_60centroids_fullyMeshed.txt")  # model mesh element (model parameter) locations
 # C = readdlm("KI_60centroids_justReservoir2.txt")  # model mesh element (model parameter) locations
-C = readdlm("KIyr08_60centroids_justReservoir.txt")  # model mesh element (model parameter) locations
+C = readdlm("KIyr08_60deg_centroids_justReservoir.txt")  # model mesh element (model parameter) locations
 # trueRho = readdlm("KI_60rho_fullyMeshed.txt")  # model mesh element (model parameter) locations
 # trueRho = readdlm("KI_60rho_justReservoir2.txt")  # model mesh element (model parameter) locations
-trueRho = readdlm("KIyr08_60rho_justReservoir.txt")  # model mesh element (model parameter) locations
+trueRho = readdlm("KIyr08_60deg_rho_justReservoir.txt")  # model mesh element (model parameter) locations
 n = size(C,1) 
 
 # kernel = "GaspariCohn"  # correlation kernel
