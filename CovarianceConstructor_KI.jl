@@ -3,14 +3,17 @@
 using DelimitedFiles, JLD, SparseArrays, PyPlot, Statistics
 include("buildCovariance.jl")
 include("getCovSquareRoot.jl")
+include("makeSyntheticKIwell.jl")
 include("definePrior.jl")
 using .definePrior
 
 println("reading in the model centroids")
 # C = readdlm("KI_60centroids_fullyMeshed.txt")  # model mesh element (model parameter) locations
-C = readdlm("KI_60centroids_justReservoir2.txt")  # model mesh element (model parameter) locations
+# C = readdlm("KI_60centroids_justReservoir2.txt")  # model mesh element (model parameter) locations
+C = readdlm("KIyr08_60centroids_justReservoir.txt")  # model mesh element (model parameter) locations
 # trueRho = readdlm("KI_60rho_fullyMeshed.txt")  # model mesh element (model parameter) locations
-trueRho = readdlm("KI_60rho_justReservoir2.txt")  # model mesh element (model parameter) locations
+# trueRho = readdlm("KI_60rho_justReservoir2.txt")  # model mesh element (model parameter) locations
+trueRho = readdlm("KIyr08_60rho_justReservoir.txt")  # model mesh element (model parameter) locations
 n = size(C,1) 
 
 # kernel = "GaspariCohn"  # correlation kernel
@@ -63,7 +66,7 @@ end
 figure(1,figsize=(6,2.5))
 scatter(C[:,1],C[:,2],c=B[Int64(ceil(size(B,1)*rand())),:],s=2)
 plt.xlim([-5e3, 7e3])
-plt.ylim([0, 2.25e3])
+plt.ylim([1.1e3, 2.25e3])
 plt.gca().invert_yaxis()
 
 save("covB_KI.jld","B",B)
@@ -82,27 +85,31 @@ println("plotting...")
 figure(2,figsize=(6,2.5))
 scatter(C[:,1],C[:,2],c=θ,s=2,cmap=ColorMap("turbo"))
 plt.xlim([-5e3, 7e3])
-plt.ylim([0, 2.25e3])
+plt.ylim([1.1e3, 2.25e3])
 plt.gca().invert_yaxis()
 colorbar()
+clim(0, 1.75)
 
 figure(3,figsize=(6,2.5))
 scatter(C[:,1],C[:,2],c=trueRho,s=2,cmap=ColorMap("turbo"))
 plt.xlim([-5e3, 7e3])
-plt.ylim([0, 2.25e3])
+plt.ylim([1.1e3, 2.25e3])
 plt.gca().invert_yaxis()
 colorbar()
+clim(0, 1.75)
 
 figure(4,figsize=(6,2.5))
 scatter(C[:,1],C[:,2],c=meanRho,s=2,cmap=ColorMap("turbo"))
 plt.xlim([-5e3, 7e3])
-plt.ylim([0, 2.25e3])
+plt.ylim([1.1e3, 2.25e3])
 plt.gca().invert_yaxis()
+colorbar()
+clim(0, 1.75)
 
 figure(5,figsize=(6,2.5))
 scatter(C[:,1],C[:,2],c=GU,s=2,cmap=ColorMap("turbo"))
 plt.xlim([-5e3, 7e3])
-plt.ylim([0, 2.25e3])
+plt.ylim([1.1e3, 2.25e3])
 plt.gca().invert_yaxis()
 for ip in eachindex(wellLogUnits)
     plot(wellLogUnits[ip][:,1],wellLogUnits[ip][:,2])
