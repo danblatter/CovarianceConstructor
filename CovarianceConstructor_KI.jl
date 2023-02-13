@@ -10,10 +10,10 @@ using .definePrior
 println("reading in the model centroids")
 # C = readdlm("KI_60centroids_fullyMeshed.txt")  # model mesh element (model parameter) locations
 # C = readdlm("KI_60centroids_justReservoir2.txt")  # model mesh element (model parameter) locations
-C = readdlm("KIyr08_60deg_centroids_justReservoir.txt")  # model mesh element (model parameter) locations
+C = readdlm("MARE2DEM_models/KIyr08_60deg_centroids_justReservoir.txt")  # model mesh element (model parameter) locations
 # trueRho = readdlm("KI_60rho_fullyMeshed.txt")  # model mesh element (model parameter) locations
 # trueRho = readdlm("KI_60rho_justReservoir2.txt")  # model mesh element (model parameter) locations
-trueRho = readdlm("KIyr08_60deg_rho_justReservoir.txt")  # model mesh element (model parameter) locations
+trueRho = readdlm("MARE2DEM_models/KIyr08_60deg_rho_justReservoir.txt")  # model mesh element (model parameter) locations
 n = size(C,1) 
 
 # kernel = "GaspariCohn"  # correlation kernel
@@ -36,10 +36,11 @@ wellLog = makeSyntheticKIwell(C,trueRho,wellX)
 # load in the geologic horizons
 println("loading geologic horizons")
 s1 = readdlm("Surfaces/KI60_topSeal.txt")
-s2 = readdlm("Surfaces/KI60_topSeal_mine.txt")
-s3 = readdlm("Surfaces/KI60_topRes.txt")
+# s2 = readdlm("Surfaces/KI60_topSeal_mine.txt")
+# s3 = readdlm("Surfaces/KI60_topRes.txt")
 s4 = readdlm("Surfaces/KI60_baseRes.txt")
-H = Array[s1,s2,s3,s4]
+# H = Array[s1,s2,s3,s4]
+H = Array[s1,s4]
 
 # get the geologic unit assignment vector
 println("assigning each model parameter to a geologic unit")
@@ -63,11 +64,14 @@ else
     B = (mean(stdRho))^2 .* B
 end
 
-figure(1,figsize=(6,2.5))
-scatter(C[:,1],C[:,2],c=B[Int64(ceil(size(B,1)*rand())),:],s=2)
+figure(1,figsize=(6.0,2.75))
+scatter(C[:,1],C[:,2],c=B[Int64(ceil(size(B,1)*rand())),:],s=5)
 plt.xlim([-5e3, 7e3])
 plt.ylim([1.1e3, 2.25e3])
 plt.gca().invert_yaxis()
+plt.ylabel("depth (m)")
+plt.xlabel("horiz. position (m)")
+plt.title("correlation kernel")
 
 save("covB_KI.jld","B",B)
 
@@ -82,34 +86,46 @@ println("drawing random sample...")
 println("plotting...")
 # plot this sample
 
-figure(2,figsize=(6,2.5))
-scatter(C[:,1],C[:,2],c=θ,s=2,cmap=ColorMap("turbo"))
+figure(2,figsize=(6.5,2.75))
+scatter(C[:,1],C[:,2],c=θ,s=5,cmap=ColorMap("turbo"))
 plt.xlim([-5e3, 7e3])
 plt.ylim([1.1e3, 2.25e3])
+plt.ylabel("depth (m)")
+plt.xlabel("horiz. position (m)")
+plt.title("random prior ρ model")
 plt.gca().invert_yaxis()
 colorbar()
 clim(0, 1.75)
 
-figure(3,figsize=(6,2.5))
-scatter(C[:,1],C[:,2],c=trueRho,s=2,cmap=ColorMap("turbo"))
+figure(3,figsize=(6.5,2.75))
+scatter(C[:,1],C[:,2],c=trueRho,s=5,cmap=ColorMap("turbo"))
 plt.xlim([-5e3, 7e3])
 plt.ylim([1.1e3, 2.25e3])
+plt.ylabel("depth (m)")
+plt.xlabel("horiz. position (m)")
+plt.title("true ρ model")
 plt.gca().invert_yaxis()
 colorbar()
 clim(0, 1.75)
 
-figure(4,figsize=(6,2.5))
-scatter(C[:,1],C[:,2],c=meanRho,s=2,cmap=ColorMap("turbo"))
+figure(4,figsize=(6.5,2.75))
+scatter(C[:,1],C[:,2],c=meanRho,s=5,cmap=ColorMap("turbo"))
 plt.xlim([-5e3, 7e3])
 plt.ylim([1.1e3, 2.25e3])
+plt.ylabel("depth (m)")
+plt.xlabel("horiz. position (m)")
+plt.title("mean ρ model")
 plt.gca().invert_yaxis()
 colorbar()
 clim(0, 1.75)
 
-figure(5,figsize=(6,2.5))
-scatter(C[:,1],C[:,2],c=GU,s=2,cmap=ColorMap("turbo"))
+figure(5,figsize=(6.5,2.75))
+scatter(C[:,1],C[:,2],c=GU,s=5,cmap=ColorMap("turbo"))
 plt.xlim([-5e3, 7e3])
 plt.ylim([1.1e3, 2.25e3])
+plt.ylabel("depth (m)")
+plt.xlabel("horiz. position (m)")
+plt.title("geologic units (and well sections)")
 plt.gca().invert_yaxis()
 for ip in eachindex(wellLogUnits)
     plot(wellLogUnits[ip][:,1],wellLogUnits[ip][:,2])
