@@ -8,10 +8,10 @@ import MPI, Mare2dem
 using DelimitedFiles
 
 # MARE2DEM parameter files:
-filenameroot = "KIyr08_60_justReservoir.0" # MARE2DEM model files to load
+filenameroot = "MARE2DEM_models/KIyr08_60_justReservoir.0" # MARE2DEM model files to load
 bquiet       = true       # set to true to turn off all MARE2DEM print statements
-outfilename = "KIyr08_60centroids_justReservoir.txt"
-outfilename2 = "KIyr08_60rho_justReservoir.txt"
+outfilename = "MARE2DEM_models/KIyr08_60deg_centroids_justReservoir.txt"
+outfilename2 = "MARE2DEM_models/KIyr08_60deg_rho_justReservoir.txt"
 
 # MPI stuff
 # Initialize MPI and get communicator, rank and number of MPI processes in communicator:

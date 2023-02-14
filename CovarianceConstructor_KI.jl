@@ -25,7 +25,9 @@ n = size(C,1)
 #   1. a scalar; l is the same everywhere
 #   2. a function; must be a function of x and z
 # kernel = "MattiSpecial_GC"  # correlation kernel
+# corrlen_MSgc = 150    # isotropic correlation length (m)
 kernel = "GaspariCohn"  # correlation kernel
+corrLen = [500.0; 25.0]     # anisotropic correlation lengths, [x ;z] (m)
 
 # load in the well log; we'll build the prior mean and standard deviation models from this (along with 
 # geologic/seismic surfaces)
@@ -35,12 +37,12 @@ wellLog = makeSyntheticKIwell(C,trueRho,wellX)
 
 # load in the geologic horizons
 println("loading geologic horizons")
-s1 = readdlm("Surfaces/KI60_topSeal.txt")
+s_top = readdlm("Surfaces/KI60_topSeal.txt")
 # s2 = readdlm("Surfaces/KI60_topSeal_mine.txt")
 # s3 = readdlm("Surfaces/KI60_topRes.txt")
-s4 = readdlm("Surfaces/KI60_baseRes.txt")
-# H = Array[s1,s2,s3,s4]
-H = Array[s1,s4]
+s_bot = readdlm("Surfaces/KI60_baseRes.txt")
+# H = Array[s_top,s2,s3,s_bot]
+H = Array[s_top,s_bot]
 
 # get the geologic unit assignment vector
 println("assigning each model parameter to a geologic unit")
@@ -56,10 +58,9 @@ wellLogUnits = assignGeologicUnits_wellLog(wellLog,H,zmax)
 meanRho, stdRho = assignMeanStdCorrlen(wellLogUnits,GU,C,H)
 
 if cmp(kernel,"MattiSpecial_GC") == 0
-    corrlen = 150 .* ones(size(meanRho))
+    corrLen = corrlen_MSgc .* ones(size(meanRho))
     B = buildCovariance(C,kernel,corrLen,stdRho)
 else
-    corrLen = [1000.0; 50.0]
     B = buildCovariance(C,kernel,corrLen,stdRho)
     B = (mean(stdRho))^2 .* B
 end
