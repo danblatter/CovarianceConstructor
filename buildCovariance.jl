@@ -8,7 +8,6 @@
 
 using LinearAlgebra, SparseArrays
 include("kernels.jl")
-include("tearFunctions.jl")
 
 function buildCovariance(C,kernel,l,s)
 
